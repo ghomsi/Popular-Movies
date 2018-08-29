@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Popular movie</string>
+
+    <!--layout string ressources-->
+    <string name="movie_title">movie title</string>
+    <string name="movie_rate">rate</string>
+    <string name="movie_description">description</string>
+    <string name="movie_date">date</string>
+    <string name="movie_language">original language</string>
+    <string name="top_rated">Top rated</string>
+    <string name="popular">Popular</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

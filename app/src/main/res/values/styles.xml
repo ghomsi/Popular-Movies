@@ -1,0 +1,24 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <string-array name="movies_names">
+        <item>Ham and cheese sandwich</item>
+        <item>Bosna</item>
+        <item>Chivito</item>
+        <item>Club sandwich</item>
+        <item>Gua bao</item>
+        <item>Medianoche</item>
+        <item>Pljeskavica</item>
+        <item>Roujiamo</item>
+        <item>Shawarma</item>
+        <item>Vada Pav</item>
+    </string-array>
+
+</resources>
