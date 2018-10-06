@@ -16,19 +16,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.Toast;
 
 import com.ghomovie.camtel.ghomovie.model.Movie;
 import com.ghomovie.camtel.ghomovie.utils.JsonUtils;
 import com.ghomovie.camtel.ghomovie.utils.MovieAdapter;
+import com.ghomovie.camtel.ghomovie.utils.MovieRecyclerViewAdapter;
 import com.ghomovie.camtel.ghomovie.utils.NetworkUtils;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 
 /**
@@ -39,11 +37,18 @@ import java.util.Arrays;
  * Use the {@link main#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class main extends Fragment {
+public class main extends Fragment
+        implements MovieRecyclerViewAdapter.MovieItemClickListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    public static final int POPULAR_SORT = 0;
+    public static final int TOP_RATED_SORT = 1;
+
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final int NUMBERS_OF_COLUMNS=2;
 
     private static final int GROUPID = 1;
 
@@ -52,19 +57,21 @@ public class main extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+    MovieRecyclerViewAdapter.MovieItemClickListener mOnClickListener;
 
     private MovieAdapter movieAdapter;
+    private MovieRecyclerViewAdapter mMovieAdapter;
     private ArrayList<Movie> mMoviesList;
+
 
     private View rootView;
     private MenuItem mPopular;
     private MenuItem mRate;
+    private RecyclerView mMoviesRV;
 
-    Movie[] movies = {
-            new Movie("https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Grilled_ham_and_cheese_014.JPG/800px-Grilled_ham_and_cheese_014.JPG"),
-            new Movie("https://upload.wikimedia.org/wikipedia/commons/c/ca/Bosna_mit_2_Bratw%C3%BCrsten.jpg"),
-            new Movie("https://upload.wikimedia.org/wikipedia/commons/4/48/Chivito1.jpg")
-    };
+
+
+
 
     public main() {
         // Required empty public constructor
@@ -92,17 +99,9 @@ public class main extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        //if(savedInstanceState==null || !savedInstanceState.containsKey("movies")){
+
             URL url = NetworkUtils.buildUrl("p");
             new MovieDBQueryTask().execute(url);
-
-        //}else{
-        //    mMoviesList = savedInstanceState.getParcelableArrayList("movies");
-        //}
-        /*if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }*/
     }
 
     @Override
@@ -131,13 +130,13 @@ public class main extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case 0:
+            case POPULAR_SORT:
                 Toast.makeText(getActivity(), R.string.popular, Toast.LENGTH_SHORT).show();
                 URL url1 = NetworkUtils.buildUrl("p");
                 new MovieDBQueryTask().execute(url1);
                 checkedController(true);
                 return  true;
-            case 1:
+            case TOP_RATED_SORT:
                 Toast.makeText(getActivity(), R.string.top_rated, Toast.LENGTH_SHORT).show();
                 URL url2 = NetworkUtils.buildUrl("r");
                 new MovieDBQueryTask().execute(url2);
@@ -164,17 +163,24 @@ public class main extends Fragment {
 
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        mMoviesRV = (RecyclerView) rootView.findViewById(R.id.rv_movies);
+        mMoviesRV.setLayoutManager(new GridLayoutManager(getActivity(),NUMBERS_OF_COLUMNS));
+        mMoviesRV.setHasFixedSize(true);
+
+        mOnClickListener=this;
 
 
         return rootView;
 
     }
 
-    private void launchDetailActivity(int position, ArrayList<Movie> mMoviesList) {
+    private void launchDetailActivity(int position) {
+        Log.i("movie",mMoviesList.get(position).getTitle());
+
         Intent intent = new Intent(getContext(), detail.class);
         intent.putExtra("movie", mMoviesList.get(position));
         startActivity(intent);
-        //Log.i("movie",mMoviesList.get(position).getTitle());
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -201,6 +207,11 @@ public class main extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onMovieItemClick(int clickedItemIndex) {
+        launchDetailActivity(clickedItemIndex);
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -216,7 +227,7 @@ public class main extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    public class MovieDBQueryTask extends AsyncTask<URL, Void,String>{
+    public class MovieDBQueryTask extends AsyncTask<URL, Void,String> implements com.ghomovie.camtel.ghomovie.MovieDBQueryTask {
 
         @Override
         protected String doInBackground(URL... urls) {
@@ -236,18 +247,17 @@ public class main extends Fragment {
         protected void onPostExecute(String s) {
             if(s != null && !s.equals("")){
                 Log.i("moviedb response",s);
-                mMoviesList= new ArrayList<Movie>(new JsonUtils().parseSandwichJson(s));
-                movieAdapter = new MovieAdapter(getActivity(), mMoviesList);
+                mMoviesList= new ArrayList<Movie>(new JsonUtils().parseMovieJson(s));
 
-                GridView gridView = (GridView) rootView.findViewById(R.id.movies_gridview);
 
-                gridView.setAdapter(movieAdapter);
-                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                        launchDetailActivity(position,mMoviesList);
-                    }
-                });
+                mMovieAdapter = new MovieRecyclerViewAdapter(getActivity(),mMoviesList,  mOnClickListener);
+
+
+
+                mMoviesRV.setAdapter(mMovieAdapter);
+
+
+
             }
         }
     }

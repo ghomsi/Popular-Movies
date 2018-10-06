@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="8dp"
+    android:layout_marginTop="8dp">
+
+    <ImageButton
+        android:id="@+id/trailer1Button"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@android:drawable/ic_media_play" />
+
+    <TextView
+        android:id="@+id/trailer_part"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="@string/movie_part1"
+        android:textColor="@color/colorPrimaryDark"/>
+</LinearLayout>

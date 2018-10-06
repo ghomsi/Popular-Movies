@@ -161,4 +161,11 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
+
+    public String getVideos(){
+        return "/movie/"+id+"/videos";
+    }
+    public String getReviews(){
+        return  "/movie/"+id+"/reviews";
+    }
 }

@@ -6,14 +6,20 @@
     tools:context=".main">
 
     <!-- TODO: Update blank fragment layout -->
-    <GridView
+    <!--<GridView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/movies_gridview"
         android:columnWidth="150dp"
         android:numColumns="auto_fit"
         android:stretchMode="columnWidth">
-    </GridView>
+    </GridView>-->
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/rv_movies">
+
+    </android.support.v7.widget.RecyclerView>
 
 
 </FrameLayout>

@@ -9,7 +9,13 @@
     <string name="movie_language">original language</string>
     <string name="top_rated">Top rated</string>
     <string name="popular">Popular</string>
+    <string name="mark_button">Add my mark</string>
+    <string name="trailer">Trailers:</string>
+    <string name="review">Reviews:</string>
+    <string name="review_text">Review</string>
+    <string name="movie_part1">Trailer 1</string>
+    <string name="movie_part2">Trailer 2</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="writen_by">written by: </string>
+
 </resources>
