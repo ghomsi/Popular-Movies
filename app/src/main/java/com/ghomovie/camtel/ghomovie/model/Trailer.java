@@ -94,6 +94,6 @@ public class Trailer implements Parcelable {
     };
 
     public String getVideo(){
-        return "https://www.youtube.com/watch?v"+this.key;
+        return "https://www.youtube.com/watch?v="+this.key;
     }
 }

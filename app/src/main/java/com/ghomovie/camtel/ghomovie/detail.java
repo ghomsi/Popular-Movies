@@ -1,5 +1,6 @@
 package com.ghomovie.camtel.ghomovie;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,12 +14,14 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ghomovie.camtel.ghomovie.data.MoviesDBHelper;
 import com.ghomovie.camtel.ghomovie.model.Movie;
 import com.ghomovie.camtel.ghomovie.model.Review;
 import com.ghomovie.camtel.ghomovie.model.Trailer;
@@ -45,6 +48,7 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
     @BindView(R.id.detail_ratingbar) RatingBar rate;
     @BindView(R.id.detail_movie_date) TextView date;
     @BindView(R.id.detail_movie_lang) TextView lang;
+    @BindView(R.id.mark_button) Button btnfavorite;
 
     private static final int NUMBERS_OF_COLUMNS=2;
 
@@ -56,6 +60,8 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
 
     private RecyclerView mReviewRV;
     private RecyclerView mTrailerRV;
+    private MoviesDBHelper myDB;
+    private Movie movie;
 
     ReviewAdapter.ReviewItemClickListener mOnClickListener;
     TrailerAdapter.TrailerItemClickListener mOnClickListenerT;
@@ -68,12 +74,15 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
 
         Intent intent = getIntent();
 
+        myDB = new MoviesDBHelper(this);
+
         mOnClickListener=this;
         mOnClickListenerT=this;
 
-        Movie movie = intent.getExtras().getParcelable("movie");
+        movie = intent.getExtras().getParcelable("movie");
         Log.i("id",movie.getId().toString());
         buildUI(getApplicationContext(),movie);
+        AddData();
     }
 
     private  void buildUI(Context context, Movie movie){
@@ -95,6 +104,19 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
         URL url2 = NetworkUtils.buildUrl("reviews");
         new MovieDBQueryTask(true).execute(url2);
 
+    }
+
+    public void AddData(){
+        btnfavorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isInserted = myDB.insertData(movie);
+                if(isInserted)
+                    Toast.makeText(getApplicationContext(),"INSERTED to your favorites",Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(getApplicationContext(),"not INSERTED to your favorites",Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public void openMedia(Uri file) {
@@ -122,6 +144,10 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
 
         Uri webpage = Uri.parse(trailer.getVideo());
         openMedia(webpage);
+    }
+
+    public void insertData(Movie movie){
+        //ContentValues[] movieValueArr = new ContentValues[]
     }
 
 

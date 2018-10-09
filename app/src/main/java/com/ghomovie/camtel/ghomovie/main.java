@@ -2,11 +2,16 @@ package com.ghomovie.camtel.ghomovie;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,6 +23,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.ghomovie.camtel.ghomovie.data.MovieContract;
+import com.ghomovie.camtel.ghomovie.data.MoviesDBHelper;
 import com.ghomovie.camtel.ghomovie.model.Movie;
 import com.ghomovie.camtel.ghomovie.utils.JsonUtils;
 import com.ghomovie.camtel.ghomovie.utils.MovieAdapter;
@@ -44,6 +51,9 @@ public class main extends Fragment
 
     public static final int POPULAR_SORT = 0;
     public static final int TOP_RATED_SORT = 1;
+    public static final int FAVORITE_SORT = 2;
+
+    private static final int CURSOR_LOADER_ID =0;
 
 
     private static final String ARG_PARAM1 = "param1";
@@ -51,6 +61,7 @@ public class main extends Fragment
     private static final int NUMBERS_OF_COLUMNS=2;
 
     private static final int GROUPID = 1;
+    //private static final int CURSOR_LOADER_ID = 0;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -67,7 +78,9 @@ public class main extends Fragment
     private View rootView;
     private MenuItem mPopular;
     private MenuItem mRate;
+    private MenuItem mFavorite;
     private RecyclerView mMoviesRV;
+    private MoviesDBHelper myDB;
 
 
 
@@ -99,6 +112,7 @@ public class main extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        myDB = new MoviesDBHelper(getActivity());
 
             URL url = NetworkUtils.buildUrl("p");
             new MovieDBQueryTask().execute(url);
@@ -109,21 +123,28 @@ public class main extends Fragment
         mPopular = menu.add(GROUPID,0,1,R.string.popular);
         mPopular.setCheckable(true);
 
-        //mPopular.setIcon();
-
         mRate = menu.add(GROUPID,1,2,R.string.top_rated);
         mRate.setCheckable(true);
 
-        checkedController(true);
+        mFavorite = menu.add(GROUPID,2,3,R.string.favorite);
+        mFavorite.setCheckable(true);
+
+        checkedController(1);
     }
 
-    public void checkedController(Boolean a){
-        if(a){
+    public void checkedController(Integer a){
+        if(a==1){
             mPopular.setChecked(true);
             mRate.setChecked(false);
-        }else{
+            mFavorite.setChecked(false);
+        }else if(a==2){
             mPopular.setChecked(false);
             mRate.setChecked(true);
+            mFavorite.setChecked(false);
+        }else{
+            mPopular.setChecked(false);
+            mRate.setChecked(false);
+            mFavorite.setChecked(true);
         }
     }
 
@@ -134,13 +155,18 @@ public class main extends Fragment
                 Toast.makeText(getActivity(), R.string.popular, Toast.LENGTH_SHORT).show();
                 URL url1 = NetworkUtils.buildUrl("p");
                 new MovieDBQueryTask().execute(url1);
-                checkedController(true);
+                checkedController(1);
                 return  true;
             case TOP_RATED_SORT:
                 Toast.makeText(getActivity(), R.string.top_rated, Toast.LENGTH_SHORT).show();
                 URL url2 = NetworkUtils.buildUrl("r");
                 new MovieDBQueryTask().execute(url2);
-                checkedController(false);
+                checkedController(2);
+                return true;
+            case FAVORITE_SORT:
+                //Toast.makeText(getActivity(), R.string.top_rated, Toast.LENGTH_SHORT).show();
+                viewAll();
+                checkedController(3);
                 return true;
             default:
                 break;
@@ -211,6 +237,35 @@ public class main extends Fragment
     public void onMovieItemClick(int clickedItemIndex) {
         launchDetailActivity(clickedItemIndex);
     }
+
+
+    public void viewAll(){
+        Cursor res = myDB.getAllData();
+        if(res.getCount() ==0){
+            Toast.makeText(getActivity(),"not favorites found",Toast.LENGTH_LONG).show();
+            return;
+        }
+        StringBuffer buffer = new StringBuffer();
+        while (res.moveToNext()){
+            buffer.append(MovieContract.MovieEntry._ID+res.getString(0)+"\n");
+            buffer.append(MovieContract.MovieEntry.TITLE+res.getString(1)+"\n");
+            buffer.append(MovieContract.MovieEntry.LANG+res.getString(2)+"\n");
+            buffer.append(MovieContract.MovieEntry.OVERVIEW+res.getString(3)+"\n");
+            buffer.append(MovieContract.MovieEntry.RELEASE_DATE+res.getString(4)+"\n");
+            buffer.append(MovieContract.MovieEntry.VOTE_AVERAGE+res.getString(5)+"\n");
+            buffer.append(MovieContract.MovieEntry.IMAGE+res.getString(6)+"\n\n");
+        }
+        Log.i("Data",buffer.toString());
+        /*mMoviesList= new ArrayList<Movie>(new JsonUtils().parseMovieJson(data.getString(versionIndex)));
+
+        mMovieAdapter = new MovieRecyclerViewAdapter(getActivity(),mMoviesList,  mOnClickListener);
+
+
+
+        mMoviesRV.setAdapter(mMovieAdapter);*/
+    }
+
+
 
     /**
      * This interface must be implemented by activities that contain this
