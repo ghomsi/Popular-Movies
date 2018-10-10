@@ -164,7 +164,7 @@ public class main extends Fragment
                 checkedController(2);
                 return true;
             case FAVORITE_SORT:
-                //Toast.makeText(getActivity(), R.string.top_rated, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.favorite, Toast.LENGTH_SHORT).show();
                 viewAll();
                 checkedController(3);
                 return true;
@@ -247,22 +247,22 @@ public class main extends Fragment
         }
         StringBuffer buffer = new StringBuffer();
         while (res.moveToNext()){
-            buffer.append(MovieContract.MovieEntry._ID+res.getString(0)+"\n");
-            buffer.append(MovieContract.MovieEntry.TITLE+res.getString(1)+"\n");
-            buffer.append(MovieContract.MovieEntry.LANG+res.getString(2)+"\n");
-            buffer.append(MovieContract.MovieEntry.OVERVIEW+res.getString(3)+"\n");
-            buffer.append(MovieContract.MovieEntry.RELEASE_DATE+res.getString(4)+"\n");
-            buffer.append(MovieContract.MovieEntry.VOTE_AVERAGE+res.getString(5)+"\n");
-            buffer.append(MovieContract.MovieEntry.IMAGE+res.getString(6)+"\n\n");
+            buffer.append("{\"id\":\""+res.getString(0)+"\",");
+            buffer.append("\"title\":\""+res.getString(1)+"\",");
+            buffer.append("\"original_language\":\""+res.getString(2)+"\",");
+            buffer.append("\"overview\":\""+res.getString(3)+"\",");
+            buffer.append("\"release_date\":\""+res.getString(4)+"\",");
+            buffer.append("\"vote_average\":"+res.getString(5)+",");
+            buffer.append("\"poster_path\":\""+res.getString(6)+"\"}");
         }
         Log.i("Data",buffer.toString());
-        /*mMoviesList= new ArrayList<Movie>(new JsonUtils().parseMovieJson(data.getString(versionIndex)));
+        mMoviesList= new ArrayList<Movie>(new JsonUtils().parseMovieJson(buffer.toString()));
 
         mMovieAdapter = new MovieRecyclerViewAdapter(getActivity(),mMoviesList,  mOnClickListener);
 
 
 
-        mMoviesRV.setAdapter(mMovieAdapter);*/
+        mMoviesRV.setAdapter(mMovieAdapter);
     }
 
 
