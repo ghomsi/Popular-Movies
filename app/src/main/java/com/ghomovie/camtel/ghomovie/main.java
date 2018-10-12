@@ -212,6 +212,22 @@ public class main extends Fragment
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if(savedInstanceState != null){
+            if(savedInstanceState.containsKey(LIFECYCLE_CALLBACKS_TEXT_KEY)){
+                mMoviesList = savedInstanceState.getParcelableArrayList(LIFECYCLE_CALLBACKS_TEXT_KEY);
+            }
+            if(savedInstanceState.containsKey(LIFECYCLE_CALLBACKS_CHECKEDbtn_KEY)){
+                CHECKEDVALUE = savedInstanceState.getInt(LIFECYCLE_CALLBACKS_CHECKEDbtn_KEY);
+            }
+        }else{
+            CHECKEDVALUE = 1;
+            URL url = NetworkUtils.buildUrl("p");
+            new MovieDBQueryTask().execute(url);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -280,13 +296,16 @@ public class main extends Fragment
         viewMovieModel.getItemAndMovieList().observe(getActivity(), new Observer<List<Movie>>() {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
-                mMoviesList = (ArrayList<Movie>) movies;
-                if(mMoviesList.size()==0){
+
+                if(movies.size()==0){
                     Toast.makeText(getActivity(), R.string.Efavorite, Toast.LENGTH_SHORT).show();
-                    return;
+
+                }else{
+                    mMoviesList = (ArrayList<Movie>) movies;
+                    checkedController(3);
+                    mMovieAdapter.addItems(movies);
                 }
-                checkedController(3);
-                mMovieAdapter.addItems(movies);
+
             }
         });
 
