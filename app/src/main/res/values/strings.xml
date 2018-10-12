@@ -9,9 +9,11 @@
     <string name="movie_language">original language</string>
     <string name="top_rated">Top rated</string>
     <string name="favorite">favorites</string>
+    <string name="Efavorite">SORRY you don\'t have favorites!</string>
 
     <string name="popular">Popular</string>
     <string name="mark_button">Add to favorite</string>
+    <string name="rmark_button">Remove to favorite</string>
     <string name="trailer">Trailers:</string>
     <string name="review">Reviews:</string>
     <string name="review_text">Review</string>

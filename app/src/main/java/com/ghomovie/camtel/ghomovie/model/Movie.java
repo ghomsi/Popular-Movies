@@ -1,11 +1,22 @@
 package com.ghomovie.camtel.ghomovie.model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+@Entity
 public class Movie implements Parcelable {
 
-    private String URL= "http://image.tmdb.org/t/p/w185//";
+    @PrimaryKey
+    private Long id;
+    private String title;
+    private String lg;
+    private String overview;
+    private String release_date;
+    private Double vote_average;
+    private String image;
+
 
     public Long getId() {
         return id;
@@ -55,13 +66,7 @@ public class Movie implements Parcelable {
         this.vote_average = vote_average;
     }
 
-    private Long id;
-    private String title;
-    private String lg;
-    private String overview;
-    private String release_date;
-    private Double vote_average;
-    private String image;
+
 
     public  Movie(){}
 
@@ -79,14 +84,10 @@ public class Movie implements Parcelable {
         this.overview = overview;
         this.release_date = release_date;
         this.vote_average = vote_average;
-        this.image = URL+image;
-
-    }
-    /*Todo( to be removed)*/
-    public Movie(String image){
         this.image = image;
 
     }
+
 
     private Movie(Parcel in){
         Long hashid = in.readLong();
@@ -115,7 +116,7 @@ public class Movie implements Parcelable {
     }
 
     public void setImage(String image) {
-        this.image = URL+image;
+        this.image = image;
     }
 
     @Override

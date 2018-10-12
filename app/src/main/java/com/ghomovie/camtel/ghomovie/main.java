@@ -1,5 +1,9 @@
 package com.ghomovie.camtel.ghomovie;
 
+import android.app.AlertDialog;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -23,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.ghomovie.camtel.ghomovie.data.AppDatabase;
 import com.ghomovie.camtel.ghomovie.data.MovieContract;
 import com.ghomovie.camtel.ghomovie.data.MoviesDBHelper;
 import com.ghomovie.camtel.ghomovie.model.Movie;
@@ -30,10 +35,12 @@ import com.ghomovie.camtel.ghomovie.utils.JsonUtils;
 import com.ghomovie.camtel.ghomovie.utils.MovieAdapter;
 import com.ghomovie.camtel.ghomovie.utils.MovieRecyclerViewAdapter;
 import com.ghomovie.camtel.ghomovie.utils.NetworkUtils;
+import com.ghomovie.camtel.ghomovie.viewModel.MovieListViewModel;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -61,7 +68,11 @@ public class main extends Fragment
     private static final int NUMBERS_OF_COLUMNS=2;
 
     private static final int GROUPID = 1;
-    //private static final int CURSOR_LOADER_ID = 0;
+    private static int CHECKEDVALUE;
+
+    private static final String LIFECYCLE_CALLBACKS_TEXT_KEY = "movies";
+    private static final String LIFECYCLE_CALLBACKS_CHECKEDbtn_KEY = "checked";
+
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -81,6 +92,7 @@ public class main extends Fragment
     private MenuItem mFavorite;
     private RecyclerView mMoviesRV;
     private MoviesDBHelper myDB;
+    private MovieListViewModel viewMovieModel;
 
 
 
@@ -112,10 +124,28 @@ public class main extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        myDB = new MoviesDBHelper(getActivity());
+        viewMovieModel = ViewModelProviders.of(this).get(MovieListViewModel.class);
 
+
+        if(savedInstanceState != null){
+            if(savedInstanceState.containsKey(LIFECYCLE_CALLBACKS_TEXT_KEY)){
+                mMoviesList = savedInstanceState.getParcelableArrayList(LIFECYCLE_CALLBACKS_TEXT_KEY);
+            }
+            if(savedInstanceState.containsKey(LIFECYCLE_CALLBACKS_CHECKEDbtn_KEY)){
+                CHECKEDVALUE = savedInstanceState.getInt(LIFECYCLE_CALLBACKS_CHECKEDbtn_KEY);
+            }
+        }else{
+            CHECKEDVALUE = 1;
             URL url = NetworkUtils.buildUrl("p");
             new MovieDBQueryTask().execute(url);
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        AppDatabase.destroyIntance();
+        super.onDestroy();
     }
 
     @Override
@@ -129,10 +159,11 @@ public class main extends Fragment
         mFavorite = menu.add(GROUPID,2,3,R.string.favorite);
         mFavorite.setCheckable(true);
 
-        checkedController(1);
+        checkedController(CHECKEDVALUE);
     }
 
     public void checkedController(Integer a){
+        CHECKEDVALUE = a;
         if(a==1){
             mPopular.setChecked(true);
             mRate.setChecked(false);
@@ -166,7 +197,6 @@ public class main extends Fragment
             case FAVORITE_SORT:
                 Toast.makeText(getActivity(), R.string.favorite, Toast.LENGTH_SHORT).show();
                 viewAll();
-                checkedController(3);
                 return true;
             default:
                 break;
@@ -177,9 +207,11 @@ public class main extends Fragment
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putParcelableArrayList("movies",mMoviesList);
+        outState.putParcelableArrayList(LIFECYCLE_CALLBACKS_TEXT_KEY,mMoviesList);
+        outState.putInt(LIFECYCLE_CALLBACKS_CHECKEDbtn_KEY,CHECKEDVALUE);
         super.onSaveInstanceState(outState);
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -195,13 +227,18 @@ public class main extends Fragment
 
         mOnClickListener=this;
 
+        mMovieAdapter = new MovieRecyclerViewAdapter(getActivity(),mMoviesList,  mOnClickListener);
+        mMoviesRV.setAdapter(mMovieAdapter);
+
+
+
 
         return rootView;
 
     }
 
     private void launchDetailActivity(int position) {
-        Log.i("movie",mMoviesList.get(position).getTitle());
+        //Log.i("movie",mMoviesList.get(position).getTitle());
 
         Intent intent = new Intent(getContext(), detail.class);
         intent.putExtra("movie", mMoviesList.get(position));
@@ -240,29 +277,19 @@ public class main extends Fragment
 
 
     public void viewAll(){
-        Cursor res = myDB.getAllData();
-        if(res.getCount() ==0){
-            Toast.makeText(getActivity(),"not favorites found",Toast.LENGTH_LONG).show();
-            return;
-        }
-        StringBuffer buffer = new StringBuffer();
-        while (res.moveToNext()){
-            buffer.append("{\"id\":\""+res.getString(0)+"\",");
-            buffer.append("\"title\":\""+res.getString(1)+"\",");
-            buffer.append("\"original_language\":\""+res.getString(2)+"\",");
-            buffer.append("\"overview\":\""+res.getString(3)+"\",");
-            buffer.append("\"release_date\":\""+res.getString(4)+"\",");
-            buffer.append("\"vote_average\":"+res.getString(5)+",");
-            buffer.append("\"poster_path\":\""+res.getString(6)+"\"}");
-        }
-        Log.i("Data",buffer.toString());
-        mMoviesList= new ArrayList<Movie>(new JsonUtils().parseMovieJson(buffer.toString()));
+        viewMovieModel.getItemAndMovieList().observe(getActivity(), new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+                mMoviesList = (ArrayList<Movie>) movies;
+                if(mMoviesList.size()==0){
+                    Toast.makeText(getActivity(), R.string.Efavorite, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                checkedController(3);
+                mMovieAdapter.addItems(movies);
+            }
+        });
 
-        mMovieAdapter = new MovieRecyclerViewAdapter(getActivity(),mMoviesList,  mOnClickListener);
-
-
-
-        mMoviesRV.setAdapter(mMovieAdapter);
     }
 
 
@@ -302,14 +329,11 @@ public class main extends Fragment
         protected void onPostExecute(String s) {
             if(s != null && !s.equals("")){
                 Log.i("moviedb response",s);
+
                 mMoviesList= new ArrayList<Movie>(new JsonUtils().parseMovieJson(s));
+                mMovieAdapter.addItems(mMoviesList);
 
 
-                mMovieAdapter = new MovieRecyclerViewAdapter(getActivity(),mMoviesList,  mOnClickListener);
-
-
-
-                mMoviesRV.setAdapter(mMovieAdapter);
 
 
 

@@ -1,5 +1,7 @@
 package com.ghomovie.camtel.ghomovie;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -29,11 +31,13 @@ import com.ghomovie.camtel.ghomovie.utils.JsonUtils;
 import com.ghomovie.camtel.ghomovie.utils.NetworkUtils;
 import com.ghomovie.camtel.ghomovie.utils.ReviewAdapter;
 import com.ghomovie.camtel.ghomovie.utils.TrailerAdapter;
+import com.ghomovie.camtel.ghomovie.viewModel.MovieListViewModel;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -62,6 +66,8 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
     private RecyclerView mTrailerRV;
     private MoviesDBHelper myDB;
     private Movie movie;
+    private List<Movie> movies;
+    private MovieListViewModel viewMovieModel;
 
     ReviewAdapter.ReviewItemClickListener mOnClickListener;
     TrailerAdapter.TrailerItemClickListener mOnClickListenerT;
@@ -74,7 +80,8 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
 
         Intent intent = getIntent();
 
-        myDB = new MoviesDBHelper(this);
+        viewMovieModel = ViewModelProviders.of(this).get(MovieListViewModel.class);
+
 
         mOnClickListener=this;
         mOnClickListenerT=this;
@@ -87,7 +94,7 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
 
     private  void buildUI(Context context, Movie movie){
         Picasso.with(context)
-                .load(movie.getImage())
+                .load("http://image.tmdb.org/t/p/w185//"+movie.getImage())
                 .placeholder(R.mipmap.ic_launcher)
                 .error(R.mipmap.ic_launcher_round)
                 .noFade()
@@ -107,16 +114,38 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
     }
 
     public void AddData(){
-        btnfavorite.setOnClickListener(new View.OnClickListener() {
+
+        viewMovieModel.getItemAndMovieListbYid(movie.getId()).observe(this, new Observer<List<Movie>>() {
             @Override
-            public void onClick(View v) {
-                boolean isInserted = myDB.insertData(movie);
-                if(isInserted)
-                    Toast.makeText(getApplicationContext(),"INSERTED to your favorites",Toast.LENGTH_LONG).show();
-                else
-                    Toast.makeText(getApplicationContext(),"not INSERTED to your favorites",Toast.LENGTH_LONG).show();
+            public void onChanged(@Nullable List<Movie> movies) {
+
+                Log.i("indexOFSize:",movies.size()+"");
+                if(movies.size()>0){
+                    btnfavorite.setText(R.string.rmark_button);
+                    btnfavorite.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            viewMovieModel.deleteItem(movie);
+                            Toast.makeText(getApplicationContext(),"REMOVED from your favorites",Toast.LENGTH_LONG).show();
+                            btnfavorite.setText(R.string.mark_button);
+
+                        }
+                    });
+                }else{
+                    btnfavorite.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            viewMovieModel.addItem(movie);
+                            Toast.makeText(getApplicationContext(),"INSERTED to your favorites",Toast.LENGTH_LONG).show();
+                            btnfavorite.setText(R.string.rmark_button);
+
+                        }
+                    });
+                }
             }
         });
+
+
     }
 
     public void openMedia(Uri file) {
@@ -146,9 +175,6 @@ public class detail extends AppCompatActivity implements ReviewAdapter.ReviewIte
         openMedia(webpage);
     }
 
-    public void insertData(Movie movie){
-        //ContentValues[] movieValueArr = new ContentValues[]
-    }
 
 
     public class MovieDBQueryTask extends AsyncTask<URL, Void,String> implements com.ghomovie.camtel.ghomovie.MovieDBQueryTask {

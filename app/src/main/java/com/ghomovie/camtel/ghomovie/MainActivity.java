@@ -30,9 +30,6 @@ public class MainActivity extends AppCompatActivity implements main.OnFragmentIn
 
 
 
-        //todo(1) gridlayout customization
-        //todo(2) fragement implemantation
-        //View rootView = inflater.inflate(R.layout.fragment_main,container, false);
 
 
 
