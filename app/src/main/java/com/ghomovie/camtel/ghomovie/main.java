@@ -133,6 +133,7 @@ public class main extends Fragment
             }
             if(savedInstanceState.containsKey(LIFECYCLE_CALLBACKS_CHECKEDbtn_KEY)){
                 CHECKEDVALUE = savedInstanceState.getInt(LIFECYCLE_CALLBACKS_CHECKEDbtn_KEY);
+
             }
         }else{
             CHECKEDVALUE = 1;
@@ -215,7 +216,7 @@ public class main extends Fragment
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        if(savedInstanceState != null){
+        /*if(savedInstanceState != null){
             if(savedInstanceState.containsKey(LIFECYCLE_CALLBACKS_TEXT_KEY)){
                 mMoviesList = savedInstanceState.getParcelableArrayList(LIFECYCLE_CALLBACKS_TEXT_KEY);
             }
@@ -226,7 +227,7 @@ public class main extends Fragment
             CHECKEDVALUE = 1;
             URL url = NetworkUtils.buildUrl("p");
             new MovieDBQueryTask().execute(url);
-        }
+        }*/
     }
 
     @Override
@@ -299,7 +300,9 @@ public class main extends Fragment
 
                 if(movies.size()==0){
                     Toast.makeText(getActivity(), R.string.Efavorite, Toast.LENGTH_SHORT).show();
-
+                    URL url1 = NetworkUtils.buildUrl("p");
+                    new MovieDBQueryTask().execute(url1);
+                    checkedController(1);
                 }else{
                     mMoviesList = (ArrayList<Movie>) movies;
                     checkedController(3);
